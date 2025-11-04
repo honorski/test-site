@@ -30,6 +30,130 @@
       .resizer-info strong {
         color: var(--primary);
       }
+
+      .event-log {
+        margin-top: 30px;
+        padding: 20px;
+        background: var(--white);
+        border-radius: 8px;
+        border: 2px solid var(--catskill);
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .event-log h3 {
+        color: var(--gray900);
+        font-size: 16px;
+        margin-bottom: 15px;
+        font-weight: 500;
+      }
+
+      .event-item {
+        padding: 12px;
+        margin-bottom: 10px;
+        border-radius: 6px;
+        border-left: 4px solid var(--primary);
+        background: var(--gray50);
+        font-size: 14px;
+      }
+
+      .event-item.results-screen {
+        border-left-color: var(--robin-egg-blue);
+      }
+
+      .event-item.user-closure {
+        border-left-color: var(--primary);
+      }
+
+      .event-item.session-completed {
+        border-left-color: var(--yellow500);
+      }
+
+      .event-item.cancelled {
+        border-left-color: var(--red500);
+      }
+
+      .event-item.expired {
+        border-left-color: var(--orange500);
+      }
+
+      .event-item.iframe-resizer {
+        border-left-color: var(--gray);
+        opacity: 0.7;
+      }
+
+      .event-name {
+        font-weight: 600;
+        color: var(--black);
+        margin-bottom: 4px;
+      }
+
+      .event-time {
+        color: var(--gray);
+        font-size: 12px;
+        margin-bottom: 4px;
+      }
+
+      .event-data {
+        color: var(--pale-sky);
+        font-size: 13px;
+        font-family: monospace;
+      }
+
+      .session-id-display {
+        margin-top: 8px;
+        padding: 8px 12px;
+        background: var(--white);
+        border-radius: 4px;
+        border: 1px solid var(--light-gray);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: nowrap;
+      }
+
+      .session-id-label {
+        font-weight: 600;
+        color: var(--gray900);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .session-id-value {
+        flex: 1;
+        font-family: monospace;
+        color: var(--primary);
+        font-size: 12px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .copy-btn {
+        padding: 4px 12px;
+        background: var(--primary);
+        color: var(--white);
+        border: none;
+        border-radius: 4px;
+        font-size: 11px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .copy-btn:hover {
+        opacity: 0.8;
+      }
+
+      .copy-btn.copied {
+        background: var(--robin-egg-blue);
+      }
+
+      .no-events {
+        text-align: center;
+        color: var(--gray);
+        padding: 20px;
+        font-style: italic;
+      }
     </style>
   </head>
   <body>
@@ -46,6 +170,13 @@
         automatically adjust its height based on the content inside. The iframe
         will resize dynamically as the content changes.
       </div>
+
+      <div class="event-log">
+        <h3>Event Log (PostMessage API)</h3>
+        <div id="eventList" class="no-events">
+          No events received yet. Events will appear here as they occur.
+        </div>
+      </div>
     </div>
     <script
       src="https://cdn.jsdelivr.net/gh/davidjbradshaw/iframe-resizer/js/iframeResizer.min.js"
@@ -56,10 +187,182 @@
       // Load the default link and display it with iframe-resizer
       const defaultLink = localStorage.getItem("defaultLink");
       const container = document.getElementById("iframeContainer");
+      const eventList = document.getElementById("eventList");
+      let eventCount = 0;
+
+      // Function to add event to the log
+      function logEvent(
+        eventName,
+        eventData,
+        description,
+        isIframeResizer = false
+      ) {
+        eventCount++;
+
+        // Remove "no events" message
+        if (eventList.querySelector(".no-events")) {
+          eventList.innerHTML = "";
+        }
+
+        // Determine event class based on event name
+        let eventClass = "";
+        if (isIframeResizer) {
+          eventClass = "iframe-resizer";
+        } else if (eventName === "results_screen_shown") {
+          eventClass = "results-screen";
+        } else if (eventName === "user_requested_closure") {
+          eventClass = "user-closure";
+        } else if (eventName === "session_completed") {
+          eventClass = "session-completed";
+        } else if (eventName === "session_cancelled") {
+          eventClass = "cancelled";
+        } else if (
+          eventName === "token_expired" ||
+          eventName === "session_expired"
+        ) {
+          eventClass = "expired";
+        }
+
+        const eventItem = document.createElement("div");
+        eventItem.className = `event-item ${eventClass}`;
+
+        let sessionIdHtml = "";
+        if (eventData.sessionId) {
+          const copyBtnId = `copy-${eventCount}`;
+          sessionIdHtml = `
+            <div class="session-id-display">
+              <span class="session-id-label">Session ID:</span>
+              <span class="session-id-value">${eventData.sessionId}</span>
+              <button class="copy-btn" id="${copyBtnId}" onclick="copySessionId('${eventData.sessionId}', '${copyBtnId}')">Copy</button>
+            </div>
+          `;
+        }
+
+        eventItem.innerHTML = `
+          <div class="event-name">${eventName}</div>
+          <div class="event-time">${new Date().toLocaleTimeString()}</div>
+          ${
+            description
+              ? `<div style="color: var(--pale-sky); margin-top: 4px;">${description}</div>`
+              : ""
+          }
+          ${sessionIdHtml}
+          <div class="event-data">${JSON.stringify(eventData, null, 2)}</div>
+        `;
+
+        // Add to top of list
+        eventList.insertBefore(eventItem, eventList.firstChild);
+      }
+
+      // Function to copy session ID
+      window.copySessionId = function (sessionId, btnId) {
+        navigator.clipboard.writeText(sessionId).then(() => {
+          const btn = document.getElementById(btnId);
+          if (btn) {
+            btn.textContent = "Copied!";
+            btn.classList.add("copied");
+            setTimeout(() => {
+              btn.textContent = "Copy";
+              btn.classList.remove("copied");
+            }, 2000);
+          }
+        });
+      };
+
+      // Listen for PostMessage events from the iframe
+      window.addEventListener("message", (event) => {
+        // Check if message is from iframe-resizer library
+        if (
+          event.data &&
+          typeof event.data === "string" &&
+          event.data.startsWith("[iFrameSizer]")
+        ) {
+          // Log iframe-resizer events (dimmed)
+          logEvent(
+            "iframe-resizer",
+            { message: event.data },
+            "📏 Iframe resizer library message",
+            true
+          );
+          return;
+        }
+
+        // Check if message is from Permisso (has event.name property)
+        if (!event.data || !event.data.name) {
+          return;
+        }
+
+        const eventName = event.data.name;
+        const sessionId = event.data.sessionId;
+
+        console.log("Received Permisso event:", eventName, event.data);
+
+        // Handle different events
+        switch (eventName) {
+          case "results_screen_shown":
+            logEvent(
+              eventName,
+              event.data,
+              "✅ Results screen is now shown. Session completed (unless async models are pending). You can fetch the Session Summary."
+            );
+            break;
+
+          case "user_requested_closure":
+            logEvent(
+              eventName,
+              event.data,
+              "🚪 User clicked Close/Finish button. In iframe mode, you may want to hide the iframe or navigate away."
+            );
+            break;
+
+          case "session_completed":
+            logEvent(
+              eventName,
+              event.data,
+              "⚠️ DEPRECATED: Use results_screen_shown instead. Session completed."
+            );
+            break;
+
+          case "session_cancelled":
+            logEvent(
+              eventName,
+              event.data,
+              "❌ Session was cancelled by the user."
+            );
+            break;
+
+          case "token_expired":
+            logEvent(
+              eventName,
+              event.data,
+              "⏰ Authentication token expired (48h limit)."
+            );
+            break;
+
+          case "session_expired":
+            logEvent(
+              eventName,
+              event.data,
+              "⏰ Session expired (expiresAt surpassed)."
+            );
+            break;
+
+          case "uanataca_parking_page_shown":
+            logEvent(
+              eventName,
+              event.data,
+              '🅿️ Uanataca: User in "waiting for review" state.'
+            );
+            break;
+
+          default:
+            logEvent(eventName, event.data, "Unknown event received.");
+        }
+      });
 
       if (defaultLink) {
-        // Create the iframe
-        container.innerHTML = `<iframe id="resizedIframe" src="${defaultLink}"></iframe>`;
+        // Create the iframe with camera and microphone permissions
+        container.innerHTML = `<iframe id="resizedIframe" src="${defaultLink}" allow="camera https://widget.sandbox.permisso.io https://widget.permisso.io; microphone https://widget.sandbox.permisso.io https://widget.permisso.io"></iframe>`;
 
         // Initialize iframe-resizer when the iframe loads
         document.getElementById("resizedIframe").onload = function () {
@@ -76,11 +379,6 @@
                 "https://widget.bankflip.io",
                 "https://core.bankflip.io",
               ],
-              //   log: true, // Enable console logging for debugging
-              //   minHeight: 400,
-              //   autoResize: true,
-              //   scrolling: false,
-              //   tolerance: 0,
             },
             "#resizedIframe"
           );

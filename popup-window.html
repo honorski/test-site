@@ -99,6 +99,54 @@
         border-left: 4px solid var(--gray);
         color: var(--gray900);
       }
+
+      .session-id-display {
+        margin-top: 8px;
+        padding: 8px 12px;
+        background: var(--white);
+        border-radius: 4px;
+        border: 1px solid var(--light-gray);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: nowrap;
+      }
+
+      .session-id-label {
+        font-weight: 600;
+        color: var(--gray900);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .session-id-value {
+        flex: 1;
+        font-family: monospace;
+        color: var(--primary);
+        font-size: 12px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .copy-btn {
+        padding: 4px 12px;
+        background: var(--primary);
+        color: var(--white);
+        border: none;
+        border-radius: 4px;
+        font-size: 11px;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .copy-btn:hover {
+        opacity: 0.8;
+      }
+
+      .copy-btn.copied {
+        background: var(--robin-egg-blue);
+      }
     </style>
   </head>
   <body>
@@ -161,6 +209,19 @@
 
         const eventItem = document.createElement("div");
         eventItem.className = `event-item ${eventClass}`;
+
+        let sessionIdHtml = "";
+        if (eventData.sessionId) {
+          const copyBtnId = `copy-${eventCount}`;
+          sessionIdHtml = `
+            <div class="session-id-display">
+              <span class="session-id-label">Session ID:</span>
+              <span class="session-id-value">${eventData.sessionId}</span>
+              <button class="copy-btn" id="${copyBtnId}" onclick="copySessionId('${eventData.sessionId}', '${copyBtnId}')">Copy</button>
+            </div>
+          `;
+        }
+
         eventItem.innerHTML = `
           <div class="event-name">${eventName}</div>
           <div class="event-time">${new Date().toLocaleTimeString()}</div>
@@ -169,12 +230,28 @@
               ? `<div style="color: var(--pale-sky); margin-top: 4px;">${description}</div>`
               : ""
           }
+          ${sessionIdHtml}
           <div class="event-data">${JSON.stringify(eventData, null, 2)}</div>
         `;
 
         // Add to top of list
         eventList.insertBefore(eventItem, eventList.firstChild);
       }
+
+      // Function to copy session ID
+      window.copySessionId = function (sessionId, btnId) {
+        navigator.clipboard.writeText(sessionId).then(() => {
+          const btn = document.getElementById(btnId);
+          if (btn) {
+            btn.textContent = "Copied!";
+            btn.classList.add("copied");
+            setTimeout(() => {
+              btn.textContent = "Copy";
+              btn.classList.remove("copied");
+            }, 2000);
+          }
+        });
+      };
 
       // Listen for PostMessage events from the popup
       window.addEventListener("message", (event) => {

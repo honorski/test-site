@@ -73,7 +73,7 @@
       const container = document.getElementById("iframeContainer");
 
       if (defaultLink) {
-        container.innerHTML = `<iframe id="fullscreenIframe" src="${defaultLink}" title="Fullscreen embedded page"></iframe>`;
+        container.innerHTML = `<iframe id="fullscreenIframe" src="${defaultLink}" title="Fullscreen embedded page" allow="camera https://widget.sandbox.permisso.io https://widget.permisso.io; microphone https://widget.sandbox.permisso.io https://widget.permisso.io"></iframe>`;
       } else {
         container.innerHTML = `
           <div class="no-link-message">
