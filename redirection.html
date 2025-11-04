@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirection</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-container">
+      <h1 class="center-text">Redirection</h1>
+      <a href="index.html" class="back-link">← Back to Main</a>
+
+      <div class="redirect-info">
+        <p>
+          Redirecting to the configured link in
+          <span id="countdown">3</span> seconds...
+        </p>
+        <button id="cancelRedirect">Cancel Redirect</button>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+      // Get the default link and redirect to it
+      const defaultLink = localStorage.getItem("defaultLink");
+
+      if (!defaultLink) {
+        document.querySelector(".redirect-info").innerHTML =
+          '<p class="error-message">No default link set. Please go back and configure a link.</p>';
+      } else {
+        let countdown = 3;
+        const countdownElement = document.getElementById("countdown");
+        const cancelBtn = document.getElementById("cancelRedirect");
+
+        const interval = setInterval(() => {
+          countdown--;
+          if (countdownElement)
+            countdownElement.textContent = countdown.toString();
+
+          if (countdown <= 0) {
+            clearInterval(interval);
+            window.location.href = defaultLink;
+          }
+        }, 1000);
+
+        if (cancelBtn) {
+          cancelBtn.addEventListener("click", () => {
+            clearInterval(interval);
+            document.querySelector(".redirect-info").innerHTML =
+              '<p class="info-message">Redirect cancelled. <a href="index.html">Go back</a></p>';
+          });
+        }
+      }
+    </script>
+  </body>
+</html>

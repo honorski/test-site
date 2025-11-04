@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pop up window</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-container">
+      <h1 class="center-text">Pop up window</h1>
+      <a href="index.html" class="back-link">← Back to Main</a>
+
+      <div class="popup-controls">
+        <button id="openPopupBtn" class="popup-button">
+          Open Pop-up Window
+        </button>
+        <p class="info-message" id="popupMessage"></p>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+      // Get the default link and open it in a popup window
+      const defaultLink = localStorage.getItem("defaultLink");
+      const openBtn = document.getElementById("openPopupBtn");
+      const messageEl = document.getElementById("popupMessage");
+
+      if (!defaultLink) {
+        if (messageEl) {
+          messageEl.textContent =
+            "No default link set. Please go back and configure a link.";
+          messageEl.className = "error-message";
+        }
+        if (openBtn) openBtn.disabled = true;
+      } else {
+        if (openBtn) {
+          openBtn.addEventListener("click", () => {
+            const popup = window.open(
+              defaultLink,
+              "popupWindow",
+              "width=800,height=600,scrollbars=yes,resizable=yes"
+            );
+
+            if (popup) {
+              if (messageEl) {
+                messageEl.textContent = "Pop-up window opened successfully!";
+                messageEl.className = "info-message success";
+              }
+            } else {
+              if (messageEl) {
+                messageEl.textContent =
+                  "Pop-up blocked! Please allow pop-ups for this site.";
+                messageEl.className = "error-message";
+              }
+            }
+          });
+        }
+      }
+    </script>
+  </body>
+</html>

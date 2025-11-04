@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iframe</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page-container">
+      <h1 class="center-text">Iframe</h1>
+      <a href="index.html" class="back-link">← Back to Main</a>
+
+      <div class="iframe-container" id="iframeContainer">
+        <p class="info-message">Loading iframe...</p>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+      // Load the default link and display it in an iframe
+      const defaultLink = localStorage.getItem("defaultLink");
+      const container = document.getElementById("iframeContainer");
+
+      if (defaultLink) {
+        container.innerHTML = `<iframe src="${defaultLink}" title="Embedded page"></iframe>`;
+      } else {
+        container.innerHTML =
+          '<p class="error-message">No default link set. Please go back and configure a link.</p>';
+      }
+    </script>
+  </body>
+</html>
