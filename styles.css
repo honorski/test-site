@@ -403,6 +403,10 @@ button:disabled {
   border-left: 4px solid var(--robin-egg-blue);
 }
 
+.info-message:empty {
+  display: none;
+}
+
 .info-message.success {
   background: #ecfdf5;
   color: #047857;
