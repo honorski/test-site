@@ -6,13 +6,67 @@
     <title>Iframe Resizer</title>
     <link rel="stylesheet" href="styles.css" />
     <style>
+      /* Size selector */
+      .size-selector {
+        margin-bottom: 20px;
+        padding: 20px;
+        background: var(--gray50);
+        border-radius: 8px;
+        border: 2px solid var(--catskill);
+      }
+
+      .size-selector h3 {
+        color: var(--gray900);
+        font-size: 16px;
+        margin-bottom: 15px;
+        font-weight: 500;
+      }
+
+      .size-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .size-btn {
+        padding: 8px 16px;
+        background: var(--white);
+        color: var(--black);
+        border: 2px solid var(--light-gray);
+        border-radius: 8px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .size-btn:hover {
+        border-color: var(--primary);
+        background: var(--blue);
+      }
+
+      .size-btn.active {
+        background: var(--primary);
+        color: var(--white);
+        border-color: var(--primary);
+      }
+
+      .size-info {
+        margin-top: 10px;
+        font-size: 13px;
+        color: var(--pale-sky);
+      }
+
       .iframe-resizer-container {
         width: 100%;
-        max-width: 100%;
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
       }
 
       #resizedIframe {
-        width: 100%;
+        display: block;
+        background: #fff;
         border: 2px solid var(--catskill);
         border-radius: 10px;
         box-shadow: 0 5px 15px rgba(37, 44, 50, 0.08);
@@ -161,6 +215,34 @@
       <h1 class="center-text">Iframe Resizer</h1>
       <a href="index.html" class="back-link">← Back to Main</a>
 
+      <!-- Size Selector -->
+      <div class="size-selector">
+        <h3>📱 Test Different Window Sizes</h3>
+        <div class="size-buttons">
+          <button class="size-btn active" data-width="100%" data-height="auto">
+            Desktop (Full Width)
+          </button>
+          <button class="size-btn" data-width="768" data-height="auto">
+            Tablet (768×auto)
+          </button>
+          <button class="size-btn" data-width="375" data-height="auto">
+            iPhone SE (375×auto)
+          </button>
+          <button class="size-btn" data-width="390" data-height="auto">
+            iPhone 12/13 (390×auto)
+          </button>
+          <button class="size-btn" data-width="414" data-height="auto">
+            iPhone Pro Max (414×auto)
+          </button>
+          <button class="size-btn" data-width="360" data-height="auto">
+            Android (360×auto)
+          </button>
+        </div>
+        <div class="size-info" id="sizeInfo">
+          Current size: Full Width × auto (height adjusts automatically)
+        </div>
+      </div>
+
       <div class="iframe-resizer-container" id="iframeContainer">
         <p class="info-message">Loading iframe with auto-resize...</p>
       </div>
@@ -188,7 +270,36 @@
       const defaultLink = localStorage.getItem("defaultLink");
       const container = document.getElementById("iframeContainer");
       const eventList = document.getElementById("eventList");
+      const sizeInfo = document.getElementById("sizeInfo");
       let eventCount = 0;
+      let currentIframe = null;
+
+      // Size selector functionality
+      const sizeButtons = document.querySelectorAll(".size-btn");
+      sizeButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const width = btn.dataset.width;
+
+          // Update active button
+          sizeButtons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          // Update iframe size
+          if (currentIframe) {
+            if (width === "100%") {
+              // Desktop mode: iframe fills container
+              currentIframe.style.width = "100%";
+              currentIframe.style.margin = "0";
+              sizeInfo.textContent = "Current size: Full Width × auto (height adjusts automatically)";
+            } else {
+              // Device mode: set iframe to device size and center
+              currentIframe.style.width = width + "px";
+              currentIframe.style.margin = "0 auto";
+              sizeInfo.textContent = `Current size: ${width}×auto (height adjusts automatically)`;
+            }
+          }
+        });
+      });
 
       // Function to add event to the log
       function logEvent(
@@ -364,8 +475,15 @@
         // Create the iframe with camera and microphone permissions
         container.innerHTML = `<iframe id="resizedIframe" src="${defaultLink}" allow="camera https://widget.sandbox.permisso.io https://widget.permisso.io; microphone https://widget.sandbox.permisso.io https://widget.permisso.io"></iframe>`;
 
+        // Store iframe reference
+        currentIframe = document.getElementById("resizedIframe");
+
+        // Set default styles (desktop mode)
+        currentIframe.style.width = "100%";
+        currentIframe.style.margin = "0";
+
         // Initialize iframe-resizer when the iframe loads
-        document.getElementById("resizedIframe").onload = function () {
+        currentIframe.onload = function () {
           iFrameResize(
             {
               heightCalculationMethod: "taggedElement",

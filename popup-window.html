@@ -6,6 +6,56 @@
     <title>Pop up window</title>
     <link rel="stylesheet" href="styles.css" />
     <style>
+      /* Size selector */
+      .size-selector {
+        margin-bottom: 20px;
+        padding: 20px;
+        background: var(--gray50);
+        border-radius: 8px;
+        border: 2px solid var(--catskill);
+      }
+
+      .size-selector h3 {
+        color: var(--gray900);
+        font-size: 16px;
+        margin-bottom: 15px;
+        font-weight: 500;
+      }
+
+      .size-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .size-btn {
+        padding: 8px 16px;
+        background: var(--white);
+        color: var(--black);
+        border: 2px solid var(--light-gray);
+        border-radius: 8px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .size-btn:hover {
+        border-color: var(--primary);
+        background: var(--blue);
+      }
+
+      .size-btn.active {
+        background: var(--primary);
+        color: var(--white);
+        border-color: var(--primary);
+      }
+
+      .size-info {
+        margin-top: 10px;
+        font-size: 13px;
+        color: var(--pale-sky);
+      }
+
       .event-log {
         margin-top: 30px;
         padding: 20px;
@@ -154,6 +204,37 @@
       <h1 class="center-text">Pop up window</h1>
       <a href="index.html" class="back-link">← Back to Main</a>
 
+      <!-- Size Selector -->
+      <div class="size-selector">
+        <h3>📱 Test Different Window Sizes</h3>
+        <div class="size-buttons">
+          <button class="size-btn active" data-width="500" data-height="700">
+            Default (500×700)
+          </button>
+          <button class="size-btn" data-width="768" data-height="1024">
+            Tablet (768×1024)
+          </button>
+          <button class="size-btn" data-width="375" data-height="667">
+            iPhone SE (375×667)
+          </button>
+          <button class="size-btn" data-width="390" data-height="844">
+            iPhone 12/13 (390×844)
+          </button>
+          <button class="size-btn" data-width="414" data-height="896">
+            iPhone Pro Max (414×896)
+          </button>
+          <button class="size-btn" data-width="360" data-height="640">
+            Android (360×640)
+          </button>
+          <button class="size-btn" data-width="1024" data-height="768">
+            Desktop (1024×768)
+          </button>
+        </div>
+        <div class="size-info" id="sizeInfo">
+          Current size: 500×700px (will be applied when you open the popup)
+        </div>
+      </div>
+
       <div class="popup-controls">
         <button id="openPopupBtn" class="popup-button">
           Open Pop-up Window
@@ -178,8 +259,27 @@
       const messageEl = document.getElementById("popupMessage");
       const eventList = document.getElementById("eventList");
       const popupStatus = document.getElementById("popupStatus");
+      const sizeInfo = document.getElementById("sizeInfo");
       let popupWindow = null;
       let eventCount = 0;
+      let selectedWidth = 500;
+      let selectedHeight = 700;
+
+      // Size selector functionality
+      const sizeButtons = document.querySelectorAll(".size-btn");
+      sizeButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          selectedWidth = parseInt(btn.dataset.width);
+          selectedHeight = parseInt(btn.dataset.height);
+
+          // Update active button
+          sizeButtons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+
+          // Update info text
+          sizeInfo.textContent = `Current size: ${selectedWidth}×${selectedHeight}px (will be applied when you open the popup)`;
+        });
+      });
 
       // Function to add event to the log
       function logEvent(eventName, eventData, description) {
@@ -375,7 +475,7 @@
             popupWindow = window.open(
               defaultLink,
               "permissoPopup",
-              "width=500,height=700,scrollbars=yes,resizable=yes"
+              `width=${selectedWidth},height=${selectedHeight},scrollbars=yes,resizable=yes`
             );
 
             if (popupWindow) {
