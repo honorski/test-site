@@ -5,6 +5,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pop up window</title>
     <link rel="stylesheet" href="styles.css" />
+    <style>
+      .event-log {
+        margin-top: 30px;
+        padding: 20px;
+        background: var(--white);
+        border-radius: 8px;
+        border: 2px solid var(--catskill);
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .event-log h3 {
+        color: var(--gray900);
+        font-size: 16px;
+        margin-bottom: 15px;
+        font-weight: 500;
+      }
+
+      .event-item {
+        padding: 12px;
+        margin-bottom: 10px;
+        border-radius: 6px;
+        border-left: 4px solid var(--primary);
+        background: var(--gray50);
+        font-size: 14px;
+      }
+
+      .event-item.results-screen {
+        border-left-color: var(--robin-egg-blue);
+      }
+
+      .event-item.user-closure {
+        border-left-color: var(--primary);
+      }
+
+      .event-item.session-completed {
+        border-left-color: var(--yellow500);
+      }
+
+      .event-item.cancelled {
+        border-left-color: var(--red500);
+      }
+
+      .event-item.expired {
+        border-left-color: var(--orange500);
+      }
+
+      .event-name {
+        font-weight: 600;
+        color: var(--black);
+        margin-bottom: 4px;
+      }
+
+      .event-time {
+        color: var(--gray);
+        font-size: 12px;
+        margin-bottom: 4px;
+      }
+
+      .event-data {
+        color: var(--pale-sky);
+        font-size: 13px;
+        font-family: monospace;
+      }
+
+      .no-events {
+        text-align: center;
+        color: var(--gray);
+        padding: 20px;
+        font-style: italic;
+      }
+
+      .popup-status {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 8px;
+        display: none;
+      }
+
+      .popup-status.active {
+        display: block;
+      }
+
+      .popup-status.open {
+        background: var(--blue);
+        border-left: 4px solid var(--robin-egg-blue);
+        color: var(--primary);
+      }
+
+      .popup-status.closed {
+        background: var(--gray50);
+        border-left: 4px solid var(--gray);
+        color: var(--gray900);
+      }
+    </style>
   </head>
   <body>
     <div class="page-container">
@@ -16,6 +111,14 @@
           Open Pop-up Window
         </button>
         <p class="info-message" id="popupMessage"></p>
+        <div id="popupStatus" class="popup-status"></div>
+      </div>
+
+      <div class="event-log">
+        <h3>Event Log (PostMessage API)</h3>
+        <div id="eventList" class="no-events">
+          No events received yet. Open the pop-up window to see events.
+        </div>
       </div>
     </div>
 
@@ -25,6 +128,162 @@
       const defaultLink = localStorage.getItem("defaultLink");
       const openBtn = document.getElementById("openPopupBtn");
       const messageEl = document.getElementById("popupMessage");
+      const eventList = document.getElementById("eventList");
+      const popupStatus = document.getElementById("popupStatus");
+      let popupWindow = null;
+      let eventCount = 0;
+
+      // Function to add event to the log
+      function logEvent(eventName, eventData, description) {
+        eventCount++;
+
+        // Remove "no events" message
+        if (eventList.querySelector(".no-events")) {
+          eventList.innerHTML = "";
+        }
+
+        // Determine event class based on event name
+        let eventClass = "";
+        if (eventName === "results_screen_shown") {
+          eventClass = "results-screen";
+        } else if (eventName === "user_requested_closure") {
+          eventClass = "user-closure";
+        } else if (eventName === "session_completed") {
+          eventClass = "session-completed";
+        } else if (eventName === "session_cancelled") {
+          eventClass = "cancelled";
+        } else if (
+          eventName === "token_expired" ||
+          eventName === "session_expired"
+        ) {
+          eventClass = "expired";
+        }
+
+        const eventItem = document.createElement("div");
+        eventItem.className = `event-item ${eventClass}`;
+        eventItem.innerHTML = `
+          <div class="event-name">${eventName}</div>
+          <div class="event-time">${new Date().toLocaleTimeString()}</div>
+          ${
+            description
+              ? `<div style="color: var(--pale-sky); margin-top: 4px;">${description}</div>`
+              : ""
+          }
+          <div class="event-data">${JSON.stringify(eventData, null, 2)}</div>
+        `;
+
+        // Add to top of list
+        eventList.insertBefore(eventItem, eventList.firstChild);
+      }
+
+      // Listen for PostMessage events from the popup
+      window.addEventListener("message", (event) => {
+        // Check if message is from Permisso (has event.name property)
+        if (!event.data || !event.data.name) {
+          return;
+        }
+
+        const eventName = event.data.name;
+        const sessionId = event.data.sessionId;
+
+        console.log("Received Permisso event:", eventName, event.data);
+
+        // Handle different events
+        switch (eventName) {
+          case "results_screen_shown":
+            logEvent(
+              eventName,
+              event.data,
+              "✅ Results screen is now shown. Session completed (unless async models are pending)."
+            );
+            updatePopupStatus("Results screen displayed", "open");
+            break;
+
+          case "user_requested_closure":
+            logEvent(
+              eventName,
+              event.data,
+              "🚪 User clicked Close/Finish button. Closing pop-up window..."
+            );
+            updatePopupStatus(
+              "User requested closure - Window will close",
+              "closed"
+            );
+
+            // Close the popup window after user requests closure
+            setTimeout(() => {
+              if (popupWindow && !popupWindow.closed) {
+                popupWindow.close();
+                updatePopupStatus(
+                  "Pop-up window closed by user request",
+                  "closed"
+                );
+              }
+            }, 1500); // Small delay to show feedback
+            break;
+
+          case "session_completed":
+            logEvent(
+              eventName,
+              event.data,
+              "⚠️ DEPRECATED: Use results_screen_shown instead. Session completed."
+            );
+            break;
+
+          case "session_cancelled":
+            logEvent(
+              eventName,
+              event.data,
+              "❌ Session was cancelled by the user."
+            );
+            updatePopupStatus("Session cancelled", "closed");
+            setTimeout(() => {
+              if (popupWindow && !popupWindow.closed) {
+                popupWindow.close();
+              }
+            }, 2000);
+            break;
+
+          case "token_expired":
+            logEvent(
+              eventName,
+              event.data,
+              "⏰ Authentication token expired (48h limit)."
+            );
+            updatePopupStatus("Token expired", "closed");
+            break;
+
+          case "session_expired":
+            logEvent(
+              eventName,
+              event.data,
+              "⏰ Session expired (expiresAt surpassed)."
+            );
+            updatePopupStatus("Session expired", "closed");
+            break;
+
+          case "uanataca_parking_page_shown":
+            logEvent(
+              eventName,
+              event.data,
+              '🅿️ Uanataca: User in "waiting for review" state.'
+            );
+            break;
+
+          default:
+            logEvent(eventName, event.data, "Unknown event received.");
+        }
+      });
+
+      function updatePopupStatus(message, status) {
+        if (popupStatus) {
+          popupStatus.textContent = message;
+          popupStatus.className = `popup-status active ${status}`;
+        }
+      }
+
+      // Check if popup is closed periodically
+      let popupCheckInterval = null;
 
       if (!defaultLink) {
         if (messageEl) {
@@ -36,17 +295,40 @@
       } else {
         if (openBtn) {
           openBtn.addEventListener("click", () => {
-            const popup = window.open(
+            popupWindow = window.open(
               defaultLink,
-              "popupWindow",
-              "width=800,height=600,scrollbars=yes,resizable=yes"
+              "permissoPopup",
+              "width=500,height=700,scrollbars=yes,resizable=yes"
             );
 
-            if (popup) {
+            if (popupWindow) {
               if (messageEl) {
                 messageEl.textContent = "Pop-up window opened successfully!";
                 messageEl.className = "info-message success";
               }
+
+              updatePopupStatus(
+                "Pop-up window is open - waiting for events...",
+                "open"
+              );
+
+              // Clear previous events when opening new popup
+              eventList.innerHTML =
+                '<div class="no-events">Waiting for events from pop-up window...</div>';
+              eventCount = 0;
+
+              // Check if popup is manually closed
+              if (popupCheckInterval) {
+                clearInterval(popupCheckInterval);
+              }
+
+              popupCheckInterval = setInterval(() => {
+                if (popupWindow && popupWindow.closed) {
+                  clearInterval(popupCheckInterval);
+                  updatePopupStatus("Pop-up window was closed", "closed");
+                  logEvent("popup_closed", {}, "🔴 Pop-up was closed.");
+                }
+              }, 500);
             } else {
               if (messageEl) {
                 messageEl.textContent =

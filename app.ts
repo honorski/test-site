@@ -37,6 +37,11 @@ const PREDEFINED_URLS: PredefinedUrl[] = [
     url: "https://s.bkfp.io/m/12953671",
     integrationMode: "iframe",
   },
+  {
+    label: "Particulares - Pop up",
+    url: "https://s.bkfp.io/m/YZU6dYP5",
+    integrationMode: "pop_up_window",
+  },
 ];
 
 // Initialize default link if not set
