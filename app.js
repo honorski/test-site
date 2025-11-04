@@ -3,6 +3,150 @@
 // Storage key constant
 const STORAGE_KEY = "defaultLink";
 const DEFAULT_LINK = "https://core.bankflip.io/demo?flow=all";
+// Predefined URLs list
+const PREDEFINED_URLS = [
+    {
+        label: "Debtors",
+        url: "https://s.bkfp.io/m/4f6a1998-11e2-47d9-b5a3-7acff04fa91e",
+    },
+    {
+        label: "Autonomos",
+        url: "https://s.bkfp.io/m/7fBtmbbH",
+    },
+    {
+        label: "Particulares",
+        url: "https://s.bkfp.io/m/JlTLXAjM",
+    },
+    {
+        label: "ASNEF",
+        url: "https://s.bkfp.io/m/93COmSxH",
+    },
+    {
+        label: "ASNEF - Multimodel",
+        url: "https://s.bkfp.io/m/tt5TvqN9",
+    },
+    {
+        label: "Identity Verification Simple + AEAT",
+        url: "https://s.bkfp.io/m/QCzlm2SC",
+    },
+    {
+        label: "Trabajo Autonomos",
+        url: "https://s.bkfp.io/m/idcjH8K7",
+    },
+    {
+        label: "ley-segunda-oportunidad",
+        url: "https://s.bkfp.io/m/FXWXwB7Y",
+    },
+    {
+        label: "Identity Verification Simple + HRMotor",
+        url: "https://s.bkfp.io/m/Go16fRSH",
+    },
+    {
+        label: "Portugal AT with IDV simple",
+        url: "https://s.bkfp.io/m/nobiqH_b",
+    },
+    {
+        label: "Portugal - Assisted",
+        url: "https://s.bkfp.io/m/GB3XFey4",
+    },
+    {
+        label: "datos-personales-seg-soc",
+        url: "https://s.bkfp.io/m/m0bnJDSv",
+    },
+    {
+        label: "datos-personales-seg-soc",
+        url: "https://s.bkfp.io/m/9porvYuB",
+    },
+    {
+        label: "Permisso Issuing",
+        url: "https://s.bkfp.io/m/CxXQdM1k",
+    },
+    {
+        label: "QA_PT_SS",
+        url: "https://s.bkfp.io/m/SS_PT",
+    },
+    {
+        label: "QA_FR_IMPOT",
+        url: "https://s.bkfp.io/m/IMPOT_FR",
+    },
+    {
+        label: "QA_FR_IMPOT",
+        url: "https://s.bkfp.io/m/IMPOT_FR_EMAIL",
+    },
+    {
+        label: "QA_PT_AT",
+        url: "https://s.bkfp.io/m/AT_NOTA_LIQUIDACAO",
+    },
+    {
+        label: "QA_PT",
+        url: "https://s.bkfp.io/m/PT_ALL",
+    },
+    {
+        label: "frAll",
+        url: "https://s.bkfp.io/m/vIHK8KnG",
+    },
+    {
+        label: "BP_CRC",
+        url: "https://s.bkfp.io/m/BP_CRC",
+    },
+    {
+        label: "portugal_all",
+        url: "https://s.bkfp.io/m/ubkZqLyq",
+    },
+    {
+        label: "frAll-email",
+        url: "https://s.bkfp.io/m/xoo3umPW",
+    },
+    {
+        label: "AT_IRS",
+        url: "https://s.bkfp.io/m/QA_AT_IRS",
+    },
+    {
+        label: "portugal_all",
+        url: "https://s.bkfp.io/m/p1HRMJiY",
+    },
+    {
+        label: "QA_FR",
+        url: "https://s.bkfp.io/m/QA_FR",
+    },
+    {
+        label: "QA_URSSAF",
+        url: "https://s.bkfp.io/m/QA_URSSAF",
+    },
+    {
+        label: "BcpyuLoYOg",
+        url: "https://s.bkfp.io/m/BcpyuLoYOg",
+    },
+    {
+        label: "pgRJMCNc",
+        url: "https://s.bkfp.io/m/pgRJMCNc",
+    },
+    {
+        label: "DrNCVdwcZA",
+        url: "https://s.bkfp.io/m/DrNCVdwcZA",
+    },
+    {
+        label: "QA_CUST",
+        url: "https://s.bkfp.io/m/hxDpzyjncM",
+    },
+    {
+        label: "IDV_DATOS_FISCALES",
+        url: "https://s.bkfp.io/m/TKVRtTYlkD",
+    },
+    {
+        label: "carp-ciud-titulos",
+        url: "https://s.bkfp.io/m/aYCDYE0g",
+    },
+    {
+        label: "Testing Customizations",
+        url: "https://s.bkfp.io/m/Ddgsb62m",
+    },
+    {
+        label: "Particulares",
+        url: "https://s.bkfp.io/m/12953671",
+        integrationMode: "iframe",
+    },
+];
 // Initialize default link if not set
 function initializeDefaultLink() {
     if (!localStorage.getItem(STORAGE_KEY)) {
@@ -41,6 +185,54 @@ function initMainPage() {
     initializeDefaultLink();
     const saveLinkBtn = document.getElementById("saveLinkBtn");
     const defaultLinkInput = document.getElementById("defaultLinkInput");
+    const predefinedSelect = document.getElementById("predefinedUrls");
+    const urlInfoDiv = document.getElementById("urlInfo");
+    // Populate predefined URLs dropdown
+    if (predefinedSelect) {
+        PREDEFINED_URLS.forEach((item, index) => {
+            const option = document.createElement("option");
+            option.value = index.toString();
+            option.textContent = item.label;
+            predefinedSelect.appendChild(option);
+        });
+        // Handle predefined URL selection
+        predefinedSelect.addEventListener("change", (e) => {
+            const selectedIndex = e.target.value;
+            if (selectedIndex === "") {
+                if (urlInfoDiv) {
+                    urlInfoDiv.classList.remove("active");
+                }
+                return;
+            }
+            const selectedUrl = PREDEFINED_URLS[parseInt(selectedIndex)];
+            // Show URL info
+            if (urlInfoDiv) {
+                urlInfoDiv.innerHTML = `
+          <div class="info-row">
+            <strong>Label:</strong> ${selectedUrl.label}
+          </div>
+          <div class="info-row">
+            <strong>URL:</strong> ${selectedUrl.url}
+          </div>
+          <div class="info-row">
+            <strong>Integration Mode:</strong> 
+            ${selectedUrl.integrationMode
+                    ? `<span class="integration-mode">${selectedUrl.integrationMode}</span>`
+                    : '<span class="no-mode">No integration mode defined</span>'}
+          </div>
+        `;
+                urlInfoDiv.classList.add("active");
+            }
+            // Save the selected URL
+            if (saveDefaultLink(selectedUrl.url)) {
+                updateLinkDisplay();
+                // Clear custom input
+                if (defaultLinkInput) {
+                    defaultLinkInput.value = "";
+                }
+            }
+        });
+    }
     // Display current link on page load
     updateLinkDisplay();
     // Pre-fill input with current link if it exists
@@ -59,6 +251,13 @@ function initMainPage() {
             if (saveDefaultLink(url)) {
                 updateLinkDisplay();
                 alert("Link saved successfully!");
+                // Clear predefined selection
+                if (predefinedSelect) {
+                    predefinedSelect.value = "";
+                }
+                if (urlInfoDiv) {
+                    urlInfoDiv.classList.remove("active");
+                }
             }
             else {
                 alert("Invalid URL. Please enter a valid URL (e.g., https://example.com)");

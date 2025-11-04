@@ -4,9 +4,40 @@ interface LinkConfig {
   defaultLink: string;
 }
 
+interface PredefinedUrl {
+  label: string;
+  url: string;
+  integrationMode?: string;
+}
+
 // Storage key constant
 const STORAGE_KEY = "defaultLink";
 const DEFAULT_LINK = "https://core.bankflip.io/demo?flow=all";
+
+// Predefined URLs list
+const PREDEFINED_URLS: PredefinedUrl[] = [
+  {
+    label: "Debtors",
+    url: "https://s.bkfp.io/m/4f6a1998-11e2-47d9-b5a3-7acff04fa91e",
+  },
+  {
+    label: "Autonomos",
+    url: "https://s.bkfp.io/m/7fBtmbbH",
+  },
+  {
+    label: "Particulares",
+    url: "https://s.bkfp.io/m/JlTLXAjM",
+  },
+  {
+    label: "Identity Verification Simple + AEAT",
+    url: "https://s.bkfp.io/m/QCzlm2SC",
+  },
+  {
+    label: "Particulares - Iframe",
+    url: "https://s.bkfp.io/m/12953671",
+    integrationMode: "iframe",
+  },
+];
 
 // Initialize default link if not set
 function initializeDefaultLink(): void {
@@ -47,11 +78,69 @@ function updateLinkDisplay(): void {
 function initMainPage(): void {
   // Initialize default link first
   initializeDefaultLink();
-  
+
   const saveLinkBtn = document.getElementById("saveLinkBtn");
   const defaultLinkInput = document.getElementById(
     "defaultLinkInput"
   ) as HTMLInputElement;
+  const predefinedSelect = document.getElementById(
+    "predefinedUrls"
+  ) as HTMLSelectElement;
+  const urlInfoDiv = document.getElementById("urlInfo");
+
+  // Populate predefined URLs dropdown
+  if (predefinedSelect) {
+    PREDEFINED_URLS.forEach((item, index) => {
+      const option = document.createElement("option");
+      option.value = index.toString();
+      option.textContent = item.label;
+      predefinedSelect.appendChild(option);
+    });
+
+    // Handle predefined URL selection
+    predefinedSelect.addEventListener("change", (e) => {
+      const selectedIndex = (e.target as HTMLSelectElement).value;
+
+      if (selectedIndex === "") {
+        if (urlInfoDiv) {
+          urlInfoDiv.classList.remove("active");
+        }
+        return;
+      }
+
+      const selectedUrl = PREDEFINED_URLS[parseInt(selectedIndex)];
+
+      // Show URL info
+      if (urlInfoDiv) {
+        urlInfoDiv.innerHTML = `
+          <div class="info-row">
+            <strong>Label:</strong> ${selectedUrl.label}
+          </div>
+          <div class="info-row">
+            <strong>URL:</strong> ${selectedUrl.url}
+          </div>
+          <div class="info-row">
+            <strong>Integration Mode:</strong> 
+            ${
+              selectedUrl.integrationMode
+                ? `<span class="integration-mode">${selectedUrl.integrationMode}</span>`
+                : '<span class="no-mode">No integration mode defined</span>'
+            }
+          </div>
+        `;
+        urlInfoDiv.classList.add("active");
+      }
+
+      // Save the selected URL
+      if (saveDefaultLink(selectedUrl.url)) {
+        updateLinkDisplay();
+        // Clear custom input
+        if (defaultLinkInput) {
+          defaultLinkInput.value = "";
+        }
+      }
+    });
+  }
 
   // Display current link on page load
   updateLinkDisplay();
@@ -75,6 +164,13 @@ function initMainPage(): void {
       if (saveDefaultLink(url)) {
         updateLinkDisplay();
         alert("Link saved successfully!");
+        // Clear predefined selection
+        if (predefinedSelect) {
+          predefinedSelect.value = "";
+        }
+        if (urlInfoDiv) {
+          urlInfoDiv.classList.remove("active");
+        }
       } else {
         alert(
           "Invalid URL. Please enter a valid URL (e.g., https://example.com)"

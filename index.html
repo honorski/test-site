@@ -12,14 +12,33 @@
 
       <div class="link-config">
         <h2>Configure Default Link</h2>
-        <div class="input-group">
-          <input
-            type="url"
-            id="defaultLinkInput"
-            placeholder="Enter default URL (e.g., https://example.com)"
-          />
-          <button id="saveLinkBtn">Save Link</button>
+
+        <!-- Predefined URLs Section -->
+        <div class="predefined-section">
+          <label for="predefinedUrls">Select from Predefined URLs:</label>
+          <select id="predefinedUrls" class="predefined-select">
+            <option value="">-- Choose a predefined URL --</option>
+          </select>
+          <div id="urlInfo" class="url-info"></div>
         </div>
+
+        <div class="separator">
+          <span>OR</span>
+        </div>
+
+        <!-- Custom URL Input Section -->
+        <div class="custom-url-section">
+          <label for="defaultLinkInput">Enter Custom URL:</label>
+          <div class="input-group">
+            <input
+              type="url"
+              id="defaultLinkInput"
+              placeholder="Enter default URL (e.g., https://example.com)"
+            />
+            <button id="saveLinkBtn">Save Link</button>
+          </div>
+        </div>
+
         <p class="current-link">
           Current Link: <span id="currentLinkDisplay">Not set</span>
         </p>
@@ -28,6 +47,10 @@
       <nav class="nav-links">
         <h2>Choose Navigation Method</h2>
         <a href="iframe.html" class="nav-button">Iframe</a>
+        <a href="fullscreen-iframe.html" class="nav-button"
+          >Fullscreen Iframe</a
+        >
+        <a href="iframe-resizer.html" class="nav-button">Iframe Resizer</a>
         <a href="redirection.html" class="nav-button">Redirection</a>
         <a href="popup-window.html" class="nav-button">Pop up window</a>
       </nav>

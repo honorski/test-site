@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fullscreen Iframe</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        overflow: hidden;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      #fullscreenIframe {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      .no-link-message {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #f0f9ff 0%, #f8fafc 100%);
+        color: #252c32;
+      }
+
+      .no-link-message h1 {
+        font-size: 2em;
+        margin-bottom: 20px;
+        color: #0f6fff;
+      }
+
+      .no-link-message a {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 12px 32px;
+        background: #0f6fff;
+        color: white;
+        text-decoration: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 400;
+        transition: all 0.3s;
+      }
+
+      .no-link-message a:hover {
+        background: #0a5adb;
+        opacity: 0.9;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="iframeContainer"></div>
+
+    <script>
+      // Load the default link and display it in fullscreen iframe
+      const defaultLink = localStorage.getItem("defaultLink");
+      const container = document.getElementById("iframeContainer");
+
+      if (defaultLink) {
+        container.innerHTML = `<iframe id="fullscreenIframe" src="${defaultLink}" title="Fullscreen embedded page"></iframe>`;
+      } else {
+        container.innerHTML = `
+          <div class="no-link-message">
+            <h1>No Default Link Set</h1>
+            <p>Please configure a default link first.</p>
+            <a href="index.html">Go to Settings</a>
+          </div>
+        `;
+      }
+    </script>
+  </body>
+</html>

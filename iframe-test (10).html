@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="https://cdn.permisso.io/widget/common/favicon-black.ico"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Permisso</title>
+    <style>
+      iframe {
+        min-width: 45%;
+        width: 45%;
+      }
+    </style>
+  </head>
+  <body>
+    <form
+      id="iframeData"
+      style="
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding-bottom: 40px;
+        width: 30%;
+      "
+    >
+      <label>Session link:</label>
+      <input type="text" name="sessionURL" id="sessionURL" />
+      <!-- <div style="display: flex; flex-direction: row; gap: 30px">
+        <label>Use iframe-resizer lib</label>
+        <input type="checkbox" id="useIframeResizer" checked="true" />
+      </div> -->
+      <button type="submit" style="width: 30%; align-self: flex-end">
+        Update
+      </button>
+    </form>
+    <div style="display: flex; flex-direction: row; gap: 16px">
+      <iframe id="resizedFrame" src=""></iframe>
+      <iframe id="normalFrame" src="" style="height: 85vh"></iframe>
+    </div>
+    <script
+      src="https://cdn.jsdelivr.net/gh/davidjbradshaw/iframe-resizer/js/iframeResizer.min.js"
+      type="text/javascript"
+    ></script>
+    <script>
+      document.querySelector("#iframeData").addEventListener(
+        "submit",
+        function (event) {
+          event.preventDefault();
+
+          document.querySelector("#resizedFrame").src =
+            document.querySelector("#sessionURL").value;
+          document.querySelector("#normalFrame").src =
+            document.querySelector("#sessionURL").value;
+        },
+        false
+      );
+      document.getElementById("resizedFrame").onload = () => {
+        iFrameResize(
+          {
+            heightCalculationMethod: "taggedElement",
+            checkOrigin: [
+              "https://s.bkfp.io",
+              "https://s.prms.io",
+              "https://bkfp.io",
+              "https://prms.io",
+              "https://widget.sandbox.permisso.io",
+              "https://widget.permisso.io",
+            ],
+          },
+          "#resizedFrame"
+        );
+      };
+    </script>
+  </body>
+</html>
