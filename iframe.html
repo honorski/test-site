@@ -61,6 +61,13 @@
         color: var(--pale-sky);
       }
 
+      /* Hide size selector on mobile */
+      @media (max-width: 768px) {
+        .size-selector {
+          display: none;
+        }
+      }
+
       .iframe-container {
         width: 100%;
         transition: all 0.3s ease;
