@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Iframe Resizer</title>
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="https://cdn.permisso.io/widget/common/favicon-black.ico"
+    />
     <link rel="stylesheet" href="styles.css" />
     <style>
       /* Size selector */
@@ -290,7 +295,8 @@
               // Desktop mode: iframe fills container
               currentIframe.style.width = "100%";
               currentIframe.style.margin = "0";
-              sizeInfo.textContent = "Current size: Full Width × auto (height adjusts automatically)";
+              sizeInfo.textContent =
+                "Current size: Full Width × auto (height adjusts automatically)";
             } else {
               // Device mode: set iframe to device size and center
               currentIframe.style.width = width + "px";
